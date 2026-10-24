@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>概念跃迁器 · 费曼式深度理解训练站</title>
+<style>
+:root{
+  --bg:#F4F4F1;          /* 浅灰白底 */
+  --bg2:#FAFAF8;
+  --card:#FFFFFF;
+  --line:#E4E4DF;
+  --line2:#D3D3CC;
+  --txt:#2B2B2B;
+  --dim:#767773;
+  --dim2:#A3A39D;
+  --acc:#24506C;         /* 单一强调色：墨靛 */
+  --acc2:#3A7093;
+  --accS:#EDF2F6;        /* 强调色 8% */
+  --accS2:#DCE7EE;       /* 强调色 16% */
+  --mono:Consolas,"SFMono-Regular",Menlo,"Courier New",monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);
+  font-family:"PingFang SC","Microsoft YaHei","Segoe UI",system-ui,sans-serif;
+  font-size:14px;line-height:1.8;-webkit-font-smoothing:antialiased}
+.wrap{position:relative;max-width:960px;margin:0 auto;padding:0 22px 80px}
+a{color:var(--acc2)}
+button{font-family:inherit;font-size:13px;color:var(--txt);cursor:pointer;
+  background:var(--card);border:1px solid var(--line2);border-radius:8px;padding:7px 15px;transition:.16s}
+button:hover{border-color:var(--acc);color:var(--acc)}
+button.primary{background:var(--acc);border-color:var(--acc);color:#F4F4F1;font-weight:600}
+button.primary:hover{background:var(--acc2);color:#fff}
+button.ghost{background:transparent;border-color:var(--line2);color:var(--dim)}
+button.sm{padding:4px 11px;font-size:12px;border-radius:7px}
+button:disabled{opacity:.4;cursor:not-allowed}
+button:disabled:hover{border-color:var(--line2);color:var(--txt)}
+.mono{font-family:var(--mono)}
+textarea,input[type=text]{font-family:inherit;font-size:13.5px;line-height:1.85;color:var(--txt);
+  width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:11px 13px;
+  outline:none;transition:.18s;resize:vertical}
+textarea:focus,input[type=text]:focus{border-color:var(--acc);background:#fff}
+textarea::placeholder,input::placeholder{color:var(--dim2)}
+textarea.termhit{border-color:var(--acc);background:#fff;
+  box-shadow:0 0 0 3px rgba(36,80,108,.06)}
+
+/* ---- 顶部 ---- */
+header{position:sticky;top:0;z-index:40;background:rgba(244,244,241,.94);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.hd{max-width:960px;margin:0 auto;padding:11px 22px 9px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.logo{display:flex;align-items:baseline;gap:9px}
+.logo h1{margin:0;font-size:17px;letter-spacing:1.5px;color:var(--acc);font-weight:700}
+.logo .en{font-family:var(--mono);font-size:9.5px;letter-spacing:3px;color:var(--dim2)}
+.hd .sp{flex:1}
+.pill{font-family:var(--mono);font-size:11px;border:1px solid var(--line2);border-radius:20px;
+  padding:3px 10px;background:var(--card);color:var(--dim);white-space:nowrap}
+.pill.on{border-color:var(--acc);color:var(--acc);background:var(--accS)}
+.nav{display:flex;gap:6px}
+.tprog{height:3px;background:transparent}
+.tprog i{display:block;height:100%;background:var(--acc);width:0;transition:width .35s}
+
+/* ---- 休息条 ---- */
+#restbar{display:none;background:var(--acc);color:#F4F4F1}
+#restbar .rb{max-width:960px;margin:0 auto;padding:8px 22px;font-size:12.5px;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+#restbar b{font-family:var(--mono);font-weight:600}
+#restbar button{background:transparent;border-color:rgba(244,244,241,.5);color:#F4F4F1}
+#restbar button:hover{background:rgba(255,255,255,.12);color:#fff}
+
+/* ---- hero ---- */
+.hero{padding:38px 0 6px}
+.hero .kicker{font-family:var(--mono);font-size:10.5px;letter-spacing:3px;color:var(--dim2);margin-bottom:10px}
+.hero h2{margin:0 0 10px;font-size:25px;line-height:1.5;color:var(--acc);letter-spacing:.5px;font-weight:700}
+.hero p{margin:0;color:var(--dim);max-width:660px}
+.pledge{margin:18px 0 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(212px,1fr));gap:10px}
+.pledge div{background:var(--bg2);border:1px solid var(--line);border-left:3px solid var(--acc);
+  border-radius:8px;padding:9px 12px;font-size:12.5px;color:var(--dim)}
+.pledge div b{color:var(--acc);font-weight:600}
+
+/* ---- section ---- */
+section{margin-top:30px;scroll-margin-top:74px}
+.sec-h{display:flex;align-items:baseline;gap:10px;margin:0 0 4px}
+.sec-h .no{font-family:var(--mono);font-size:11.5px;color:var(--acc);letter-spacing:1.5px;opacity:.6}
+.sec-h h3{margin:0;font-size:16.5px;color:var(--txt);letter-spacing:.5px;font-weight:600}
+.sec-h .en{font-family:var(--mono);font-size:9.5px;color:var(--dim2);letter-spacing:2px}
+.sec-sub{margin:0 0 15px;font-size:12.5px;color:var(--dim)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px}
+.note{font-size:12px;color:var(--dim);background:var(--bg2);border:1px dashed var(--line2);
+  border-radius:9px;padding:9px 13px;margin-top:12px;line-height:1.75}
+
+/* ---- 入场 ---- */
+.frow{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.frow input[type=text]{flex:1;min-width:220px;font-size:15px;padding:12px 14px}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.opt{border:1px solid var(--line2);background:var(--card);border-radius:20px;padding:4px 12px;
+  font-size:12.5px;color:var(--dim);cursor:pointer;transition:.15s;user-select:none}
+.opt:hover{border-color:var(--acc2);color:var(--acc)}
+.opt.on{background:var(--acc);border-color:var(--acc);color:#F4F4F1}
+.opt.on::before{content:"✓ ";font-size:10.5px}
+.popular{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px;align-items:center}
+.popular span{font-size:11.5px;color:var(--dim2);font-family:var(--mono)}
+.genbar{display:flex;align-items:center;gap:12px;margin-top:16px;flex-wrap:wrap}
+.genbar .tip{font-size:12px;color:var(--dim2)}
+
+/* ---- 训练台 ---- */
+.stagebar{display:flex;align-items:center;gap:7px;margin-bottom:16px;flex-wrap:wrap}
+.stagebar .st{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--dim2)}
+.stagebar .st i{font-family:var(--mono);font-style:normal;width:19px;height:19px;line-height:18px;
+  text-align:center;border:1px solid var(--line2);border-radius:50%;font-size:10.5px;background:var(--card)}
+.stagebar .st.on{color:var(--acc)}
+.stagebar .st.on i{background:var(--acc);border-color:var(--acc);color:#F4F4F1}
+.stagebar .st.done i{background:var(--accS2);border-color:var(--accS2);color:var(--acc)}
+.stagebar .ln{width:16px;height:1px;background:var(--line2)}
+.taskcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 24px 22px}
+.tc-kick{font-family:var(--mono);font-size:10.5px;letter-spacing:2px;color:var(--acc);opacity:.65;margin-bottom:7px}
+.tc-title{margin:0 0 9px;font-size:17.5px;font-weight:600;letter-spacing:.3px}
+.tc-desc{margin:0 0 18px;font-size:13.5px;color:var(--dim);line-height:1.85}
+.tc-desc b{color:var(--acc);font-weight:600}
+.limitrow{display:flex;justify-content:space-between;align-items:center;gap:10px;
+  font-family:var(--mono);font-size:11px;color:var(--dim2);margin-bottom:6px}
+.limitrow span.hot{color:var(--acc)}
+.echobox{margin-top:9px;font-size:12px;color:var(--dim);display:flex;align-items:flex-start;gap:7px;flex-wrap:wrap}
+.echobox .lbl{font-family:var(--mono);font-size:10.5px;color:var(--dim2);padding-top:2px}
+.echobox .w{border:1px solid var(--accS2);background:var(--accS);color:var(--acc);
+  border-radius:6px;padding:1px 8px;font-size:11.5px}
+.echobox .none{color:var(--dim2)}
+.hintrow{display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap}
+.fld{margin-bottom:14px}
+.fld>label{display:block;font-size:12px;color:var(--dim);margin-bottom:5px}
+.fld>label b{color:var(--acc);font-weight:600}
+
+/* 场景卡 */
+.scene{border:1px solid var(--line);background:var(--bg2);border-radius:11px;padding:14px 15px;margin-bottom:11px}
+.scene .sx{font-size:13.5px;line-height:1.8;margin-bottom:11px}
+.scene .sx em{font-family:var(--mono);font-style:normal;font-size:10.5px;color:var(--dim2);margin-right:7px}
+.verdicts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}
+.scene input{margin-top:0}
+.basis{font-size:13px}
+
+/* 选项行 */
+.optrow{display:flex;gap:7px;align-items:flex-start;margin-bottom:7px}
+.optrow .tag{font-family:var(--mono);font-size:11px;color:var(--dim2);padding-top:13px;width:16px;flex:0 0 16px}
+.optrow .del{flex:0 0 auto;margin-top:8px}
+
+/* ---- 反馈卡 ---- */
+.fb{margin-top:15px;border:1px solid var(--accS2);background:var(--bg2);border-radius:12px;padding:18px 20px}
+.fb h4{margin:0 0 13px;font-size:13.5px;color:var(--acc);font-weight:600;display:flex;align-items:center;gap:8px}
+.fb h4 small{font-family:var(--mono);font-size:10.5px;color:var(--dim2);font-weight:400}
+.dims{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:11px;margin-bottom:16px}
+.dim{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:9px 11px}
+.dim .dn{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--dim)}
+.dim .dn b{font-family:var(--mono);color:var(--acc);font-size:12.5px;font-weight:700}
+.dim .db{height:5px;background:#ECECE8;border-radius:4px;margin-top:7px;overflow:hidden}
+.dim .db i{display:block;height:100%;background:var(--acc);border-radius:4px;transition:width .5s}
+.fbline{display:flex;gap:11px;padding:9px 0;border-top:1px dashed var(--line2);font-size:13.5px;line-height:1.85}
+.fbline .ix{font-family:var(--mono);font-size:11px;color:var(--acc);opacity:.55;padding-top:4px;flex:0 0 16px}
+.fbline .tx{flex:1;color:var(--dim)}
+.fbline .tx q{quotes:"「" "」";color:var(--txt);font-style:normal}
+.fbline.act{background:var(--accS);border-radius:9px;padding:11px 12px;border-top:none;margin-top:6px}
+.fbline.act .tx{color:var(--acc);font-weight:500}
+.fbline.act .tx b{font-weight:700}
+.mirror{margin-top:14px;background:var(--card);border:1px dashed var(--line2);border-radius:10px;padding:12px 14px}
+.mirror .mt{font-family:var(--mono);font-size:10.5px;color:var(--dim2);letter-spacing:1px;margin-bottom:8px}
+.mirror .row{display:flex;gap:9px;font-size:12.5px;color:var(--dim);line-height:1.8;padding:3px 0}
+.mirror .row span{flex:0 0 74px;color:var(--acc);opacity:.75;font-family:var(--mono);font-size:10.5px;padding-top:3px}
+.acts{display:flex;gap:9px;margin-top:15px;flex-wrap:wrap;align-items:center}
+.acts .why{font-size:11.5px;color:var(--dim2)}
+
+/* ---- 收官 ---- */
+.finalgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:4px}
+.fcard{background:var(--bg2);border:1px solid var(--line);border-radius:11px;padding:13px 15px}
+.fcard .ft{font-family:var(--mono);font-size:10.5px;color:var(--dim2);letter-spacing:1px;margin-bottom:6px}
+.fcard .fv{font-size:13.5px;line-height:1.85;color:var(--txt)}
+.diag{background:var(--accS);border:1px solid var(--accS2);border-radius:11px;padding:14px 16px;margin-bottom:12px}
+.diag .dt{font-family:var(--mono);font-size:10.5px;color:var(--acc);letter-spacing:2px;margin-bottom:6px;opacity:.7}
+.diag .dv{font-size:14px;line-height:1.9;color:var(--acc)}
+.trend{display:flex;align-items:flex-end;gap:9px;height:96px;margin-top:6px}
+.trend .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
+.trend .barv{width:100%;background:var(--accS2);border-radius:4px 4px 0 0;position:relative;min-height:3px}
+.trend .barv i{position:absolute;left:0;right:0;bottom:0;background:var(--acc);border-radius:4px 4px 0 0}
+.trend .lb{font-family:var(--mono);font-size:10px;color:var(--dim2)}
+
+/* ---- 档案 ---- */
+.arcgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.weeks{display:grid;grid-template-columns:repeat(12,1fr);gap:5px;margin-top:6px}
+.weeks .w{aspect-ratio:1/1.35;border-radius:6px;background:#ECECE8;border:1px solid var(--line);
+  display:flex;align-items:flex-end;justify-content:center;font-family:var(--mono);font-size:9.5px;
+  color:var(--dim2);padding-bottom:3px;position:relative;overflow:hidden}
+.weeks .w.has{background:var(--accS)}
+.weeks .w.hot{background:var(--acc);color:#F4F4F1}
+.wlabel{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--dim2);margin-top:5px}
+.rec{border:1px solid var(--line);background:var(--card);border-radius:11px;padding:14px 16px;margin-bottom:11px}
+.rec .rh{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:9px}
+.rec .rh b{font-size:14.5px;color:var(--acc)}
+.rec .rh .dt{font-family:var(--mono);font-size:11px;color:var(--dim2)}
+.rec .rv{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}
+.rec .rv span{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line2);border-radius:6px;
+  padding:1px 7px;color:var(--dim)}
+.rec .rv span.hi{border-color:var(--acc);color:var(--acc);background:var(--accS)}
+.rec .rl{font-size:12.5px;color:var(--dim);line-height:1.8}
+.rec .rl div{display:flex;gap:8px}
+.rec .rl div span{flex:0 0 66px;color:var(--dim2);font-family:var(--mono);font-size:10.5px;padding-top:3px}
+.rec.due{border-color:var(--acc);background:var(--bg2)}
+.badge{font-family:var(--mono);font-size:10px;border:1px solid var(--acc);color:var(--acc);
+  background:var(--accS);border-radius:20px;padding:1px 8px}
+.empty{text-align:center;padding:34px 12px;color:var(--dim2);font-size:13px}
+.drawer{margin-top:11px;border:1px dashed var(--line2);border-radius:10px;background:var(--bg2);overflow:hidden}
+.drawer>summary{padding:10px 14px;cursor:pointer;font-size:12.5px;color:var(--dim);list-style:none;user-select:none}
+.drawer>summary::-webkit-details-marker{display:none}
+.drawer>summary::before{content:"▸ ";font-family:var(--mono);color:var(--acc);opacity:.6}
+.drawer[open]>summary::before{content:"▾ "}
+.drawer pre{margin:0;padding:0 16px 14px;white-space:pre-wrap;word-break:break-word;
+  font-family:var(--mono);font-size:11.5px;line-height:1.85;color:var(--txt)}
+.drawer .dbtns{padding:0 16px 13px;display:flex;gap:7px}
+footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);font-size:12px;color:var(--dim2)}
+#toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(14px);opacity:0;
+  background:var(--acc);color:#F4F4F1;font-size:12.5px;padding:8px 16px;border-radius:20px;
+  transition:.24s;pointer-events:none;z-index:90}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.hide{display:none !important}
+@media (max-width:640px){
+  .hero h2{font-size:21px}
+  .taskcard{padding:19px 17px 18px}
+  .tprog,.stagebar .ln{display:none}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hd">
+    <div class="logo">
+      <h1>概念跃迁器</h1>
+      <span class="en">COGNITIVE LEAP</span>
+    </div>
+    <div class="sp"></div>
+    <span class="pill" id="pClock">00:00</span>
+    <span class="pill" id="pSession">本次会话 0 分</span>
+    <div class="nav">
+      <button class="sm ghost" data-nav="train">训练台</button>
+      <button class="sm ghost" data-nav="arch">跃迁档案</button>
+    </div>
+  </div>
+  <div class="tprog"><i id="tprog"></i></div>
+</header>
+
+<div id="restbar">
+  <div class="rb">
+    <span>已连续训练 <b id="rbMin">30</b> 分钟 —— 认知负荷会稀释后面的反馈质量，建议现在起身走动 5 分钟。</span>
+    <span style="flex:1"></span>
+    <button class="sm" id="rbLater">再练 10 分钟提醒我</button>
+    <button class="sm" id="rbStop">我停一下</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <section class="hero" id="sHero">
+    <div class="kicker">FEYNMAN × MISCONCEPTION EXPOSURE</div>
+    <h2>把「我以为我懂了」，逼成「我真的能讲清楚」</h2>
+    <p>任意输入一个概念，四层递进任务依次展开：用自己的话说 → 换一个教材外的例子 → 判断三个场景是否适用 → 亲手把它讲错一次。一次只呈现一个任务。</p>
+    <div class="pledge">
+      <div><b>≤ 8 分钟</b> · 一次训练 4 个任务</div>
+      <div><b>≤ 3 条反馈</b> · 每条必附一个可行动作</div>
+      <div><b>12 周可回溯</b> · 只与你的历史对比</div>
+      <div><b>不先给标准答案</b> · 反馈只引用你自己的话</div>
+    </div>
+  </section>
+
+  <!-- 入场 -->
+  <section id="sEnter">
+    <div class="sec-h"><span class="no">00</span><h3>选一个概念，开始</h3><span class="en">ENTRY</span></div>
+    <p class="sec-sub">任意概念都可以。系统不会先告诉你它是什么意思 —— 这是训练的前提，不是疏漏。</p>
+    <div class="panel">
+      <div class="frow">
+        <input type="text" id="inConcept" placeholder="输入概念，例如：机会成本 / 熵增 / 认知失调 / 中心极限定理" maxlength="24">
+        <button class="primary" id="btnStart" style="padding:11px 22px">开始这次训练</button>
+      </div>
+      <div class="popular">
+        <span>内置题库：</span>
+        <div class="opts" id="popChips"></div>
+      </div>
+      <div class="note">内置概念的诊断词库与场景由本地知识包提供；未内置的概念走通用模板，评分仍可运行，只是追问会少一些针对性。正式上线时，本页所有「AI 提示词原文」直接替换本地启发式引擎。</div>
+    </div>
+  </section>
+
+  <!-- 训练台 -->
+  <section id="sTrain" class="hide">
+    <div class="sec-h"><span class="no" id="trNo">01</span><h3 id="trName">训练台</h3><span class="en">TRAINING</span></div>
+    <div class="stagebar" id="stagebar"></div>
+    <div class="taskcard" id="taskcard"></div>
+  </section>
+
+  <!-- 收官 -->
+  <section id="sFinal" class="hide">
+    <div class="sec-h"><span class="no">05</span><h3>这次的跃迁</h3><span class="en">DEBRIEF</span></div>
+    <div id="finalBody"></div>
+  </section>
+
+  <!-- 档案 -->
+  <section id="sArch" class="hide">
+    <div class="sec-h"><span class="no">06</span><h3>理解跃迁档案</h3><span class="en">ARCHIVE · 12W</span></div>
+    <p class="sec-sub">不排名、不与他人比较；你看到的每一条曲线都只由你自己的历史构成。</p>
+    <div id="archBody"></div>
+  </section>
+
+  <footer>
+    概念跃迁器 · 费曼式深度理解训练站 —— 本地演示版：评分由启发式规则生成，用于验证流程与反馈话术；上线时以清单中的「AI 提示词原文」驱动模型评分，其余交互不变。档案数据保存在本机浏览器（localStorage），清理浏览器数据会一并清除。
+  </footer>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* =========================================================
+   数据：内置概念知识包
+   ========================================================= */
+var GENERAL = ['定义','本质','概念','机制','层面','维度','范式','逻辑','体系','结构','是指在','指的是','所谓','进行','实现','基于','构成'];
+
+var PACKS = {
+  '机会成本':{
+    domain:'经济 · 决策',
+    terms:['机会成本','边际','稀缺','资源配置','沉没成本','效用','帕累托','生产可能性','理性人','最优'],
+    mech:['放弃','代价','最高','次优','选择','失去','本可以','换来','退而求其次','而不是'],
+    transfer:['比如','就像','好比','相当于','换句话说','等于说'],
+    textbook:['课本','教材','习题','例题','考试','曲线图','PPF'],
+    scenes:[
+      {v:'适用', key:'被放弃的最高价值选项', t:'你手上有两张演唱会门票：周五是喜欢的乐队，周六是室友生日会。两张票都已付款，时间不冲突，但你只有精力去一个。选周五乐队场。'},
+      {v:'不适用', key:'全部选项都已不可得时无从放弃', t:'学校系统崩溃，选课窗口关闭，你这学期只剩唯一一门必修可选，且没有其他学校或渠道。你最终选了这一门。'},
+      {v:'看情况', key:'是否存在可被放弃的次优选项', t:'你把原本准备攒钱买电脑的三千元，先用来报了一个两周的线下集训营。钱是自己的，集训营名额有限。'}
+    ],
+    mis:['把已经花掉的钱算进当下决策','认为只有花钱才算代价','以为它一定能用钱衡量']
+  },
+  '熵增':{
+    domain:'物理 · 系统',
+    terms:['熵','热力学第二定律','无序度','孤立系统','吉布斯自由能','可逆过程','玻尔兹曼','微观态','宏观态','自发'],
+    mech:['越来越乱','不整理就会','需要持续投入','耗散','输入能量','维持','自发','回滚','代价'],
+    transfer:['好比','就像','类似于','相当于','比如'],
+    textbook:['课本','教材','公式','dS','△S','卡诺'],
+    scenes:[
+      {v:'适用', key:'系统是否近乎封闭', t:'宿舍公共区域没人排值日，两周之后桌面、地面和公共冰箱的状态。'},
+      {v:'不适用', key:'持续输入能量维持的耗散结构', t:'空调持续通电，让一间朝西的房间在盛夏保持 24℃。'},
+      {v:'看情况', key:'是否有外部能量/信息输入', t:'一个不断有新成员加入、且有明确规范与每日站会的小团队，长期使用同一套文档协作空间。'}
+    ],
+    mis:['把「熵增」当成「一定会变乱」的口号而忽略孤立前提','以为生命体违背第二定律','把熵等同于混乱度的字面意思']
+  },
+  '自然选择':{
+    domain:'生物 · 演化',
+    terms:['自然选择','适者生存','基因频率','等位基因','适应度','演化','变异','选择压力','遗传漂变','繁殖成功率'],
+    mech:['留下后代','差别繁殖','能活下来并繁殖','环境筛选','代际积累','概率更高'],
+    transfer:['比如','就像','好比','相当于'],
+    textbook:['课本','教材','长颈鹿','桦尺蛾','考试'],
+    scenes:[
+      {v:'适用', key:'可遗传的变异 + 差别繁殖成功率', t:'同一片农田连续使用同一种杀虫剂十年，抗性个体的比例逐代上升。'},
+      {v:'不适用', key:'属于个体后天获得且不可遗传', t:'一位健身者练出了发达的肌肉，他的孩子出生时并不会因此更强壮。'},
+      {v:'看情况', key:'差异是否带来繁殖成功率差别', t:'一片森林里，鸟喙略厚的个体在硬壳种子充足的年份更容易存活。'}
+    ],
+    mis:['把「适者生存」读成「最强者生存」','认为生物会为了适应而主动改变自己','把个体层面的变化当成演化']
+  },
+  '认知失调':{
+    domain:'心理 · 社会',
+    terms:['认知失调','自我辩护','合理化','态度改变','失调感','承诺升级','选择性暴露','自我知觉'],
+    mech:['不一致','不舒服','想办法说服自己','改一个想法','补一个理由','减少不适','否认'],
+    transfer:['比如','就像','好比','类似于','举个例子'],
+    textbook:['课本','教材','费斯廷格','实验','考题'],
+    scenes:[
+      {v:'适用', key:'两个认知冲突且行为难以撤回', t:'你花高价买了一门评价平平的课，学了两节不想学，却对朋友说「这课其实挺值」。'},
+      {v:'不适用', key:'没有冲突，只有单纯的后悔', t:'你买错了尺码的鞋，七天无理由退掉了，事后想起来只是觉得当时没看仔细。'},
+      {v:'看情况', key:'行为是否可撤回、是否有外部理由', t:'社团要求全员参加一次你不认同的宣讲，结束后有人问你感受如何。'}
+    ],
+    mis:['把任何「后悔」都叫认知失调','以为它只会改变行为不会改变态度','忽略外部理由会消解失调']
+  },
+  '傅里叶变换':{
+    domain:'数学 · 工程',
+    terms:['傅里叶变换','频域','时域','正交基','卷积','欧拉公式','频谱','逆变换','DFT','FFT','冲激函数'],
+    mech:['拆成','合成','不同频率','叠加','频率成分','换一个角度看','强弱分布','周期'],
+    transfer:['好比','就像','类比','相当于','换句话说'],
+    textbook:['课本','教材','公式','习题','考试','推导'],
+    scenes:[
+      {v:'适用', key:'信号可分解为不同频率的叠加', t:'从一段嘈杂的人声录音里，识别并滤掉某个持续的固定嗡嗡声。'},
+      {v:'不适用', key:'关注点是「某一瞬间发生了什么」', t:'判断一段录音里，咳嗽声具体出现在第几秒。'},
+      {v:'看情况', key:'是否关心整体频率构成而非局部时刻', t:'分析一段周期明显的心电图，判断其中是否混入了工频干扰。'}
+    ],
+    mis:['以为变换后信息被压缩或丢失了','认为它对任何信号都「看得更清楚」','混淆时域/频域各自适合回答什么问题']
+  },
+  '中心极限定理':{
+    domain:'统计 · 数据',
+    terms:['中心极限定理','正态分布','渐近','依分布收敛','样本均值','标准误','大数定律','独立同分布','抽样分布','方差有限'],
+    mech:['抽很多次','平均之后','趋近','样本量足够','钟形','波动变小','近似','多次重复'],
+    transfer:['比如','就像','好比','相当于'],
+    textbook:['课本','教材','公式','习题','例题'],
+    scenes:[
+      {v:'适用', key:'大量独立样本均值 + 方差有限', t:'每天随机抽查 100 单外卖的配送时长，连续一百天，看这一百个日均值本身的分布形状。'},
+      {v:'不适用', key:'单条原始数据的分布本身', t:'只看某一天这 100 单配送时长本身的分布（明显右偏、有几单特别慢）。'},
+      {v:'看情况', key:'是否存在重尾/强相关使方差失效', t:'把「每次样本量」从 100 单降到 3 单，重复同样的抽样两百次后再看均值分布。'}
+    ],
+    mis:['以为原始数据会变成正态','以为 n≥30 就一律安全','忽略独立性与有限方差前提']
+  }
+};
+
+var BEHAVIOR = ['我','我们','那次','当时','上周','昨天','前几天','公司','地铁','宿舍','店里','现场','朋友','有一次','那会儿','去年'];
+var TEXTBOOKISH = ['课本','教材','书上说','习题','例题','考试','考点','老师讲的','XX',
+  '甲','乙','假设有','由此可见','综上所述'];
+
+/* =========================================================
+   工具
+   ========================================================= */
+function $(s){return document.querySelector(s)}
+function el(h){var d=document.createElement('div');d.innerHTML=h.trim();return d.firstChild}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];})}
+function clip(s,n){s=String(s||'');return s.length<=n?s:s.slice(0,n)+'…'}
+function today(){var d=new Date();return d}
+function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function addDays(d,n){var x=new Date(d.getTime());x.setDate(x.getDate()+n);return x}
+function weekStart(d){var x=new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  x.setDate(x.getDate()-((x.getDay()+6)%7));return x}
+function toast(m){var t=$('#toast');t.textContent=m;t.classList.add('on');
+  clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('on')},2200)}
+function countCN(s){return String(s||'').replace(/\s/g,'').length}
+
+/* 抽取用于反馈引用的用户原句 */
+function pickQuote(text,prefer){
+  text=String(text||'').trim();
+  if(!text) return '';
+  var parts=text.split(/[，。；！？、\n,.!?]/).map(function(s){return s.trim()}).filter(Boolean);
+  if(!parts.length) return clip(text,12);
+  if(prefer&&prefer.length){
+    for(var i=0;i<parts.length;i++){
+      for(var j=0;j<prefer.length;j++){ if(parts[i].indexOf(prefer[j])>=0) return clip(parts[i],12); }
+    }
+  }
+  var best=parts[0];
+  for(var k=1;k<parts.length;k++){ if(parts[k].length>best.length) best=parts[k]; }
+  return clip(best,12);
+}
+function hitsOf(text,list){
+  var out=[]; (list||[]).forEach(function(w){ if(text.indexOf(w)>=0) out.push(w); });
+  return out;
+}
+function clamp3(n){return Math.max(0,Math.min(3,n))}
+
+/* =========================================================
+   状态
+   ========================================================= */
+var ST={
+  concept:'',domain:'',pack:null,
+  stage:0, running:false,
+  t0:0, sec:0, session:0, restAt:1800,
+  a:{}, fb:{}, result:null
+};
+var KEY='cl_archive_v1';
+function load(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){return []}}
+function save(a){try{localStorage.setItem(KEY,JSON.stringify(a))}catch(e){}}
+
+/* =========================================================
+   计时
+   ========================================================= */
+var ticker=null;
+function startClock(){
+  if(ticker) return;
+  ticker=setInterval(function(){
+    if(!ST.running) return;
+    ST.sec++; ST.session++;
+    paintClock();
+    if(ST.session>=ST.restAt){ showRest(); }
+  },1000);
+}
+function paintClock(){
+  var m=Math.floor(ST.sec/60), s=ST.sec%60;
+  var over=ST.sec>480;
+  $('#pClock').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s+(over?' · 已过窗口':'');
+  $('#pClock').classList.toggle('on',over);
+  $('#pSession').textContent='本次会话 '+Math.floor(ST.session/60)+' 分';
+  $('#tprog').style.width=Math.min(100,ST.sec/480*100)+'%';
+}
+function resetStageClock(){ ST.sec=0; paintClock(); }
+function showRest(){
+  if($('#restbar').style.display==='block') return;
+  $('#restbar').style.display='block';
+  $('#rbMin').textContent=Math.floor(ST.session/60);
+}
+$('#rbLater').onclick=function(){ ST.restAt=ST.session+600; $('#restbar').style.display='none'; toast('好，10 分钟后再提醒一次'); };
+$('#rbStop').onclick=function(){
+  ST.session=0; ST.restAt=1800; ST.running=false;
+  $('#restbar').style.display='none'; $('#pSession').textContent='本次会话 0 分';
+  toast('已停下。回来时接着上一次的任务继续');
+};
+
+/* =========================================================
+   入场
+   ========================================================= */
+(function initPopular(){
+  var box=$('#popChips');
+  Object.keys(PACKS).forEach(function(k){
+    var c=el('<div class="opt" data-c="'+k+'">'+k+'</div>');
+    c.onclick=function(){ $('#inConcept').value=k; toast('已填入「'+k+'」，可直接开始'); };
+    box.appendChild(c);
+  });
+  $('#inConcept').addEventListener('keydown',function(e){ if(e.key==='Enter') begin(); });
+  $('#btnStart').onclick=begin;
+})();
+
+function begin(){
+  var c=$('#inConcept').value.trim();
+  if(!c){ toast('先写一个概念，哪怕只是「机会成本」四个字'); return; }
+  ST.concept=c;
+  ST.pack=PACKS[c]||null;
+  ST.domain=ST.pack?ST.pack.domain:'未指定领域';
+  ST.a={}; ST.fb={}; ST.result=null; ST.stage=1;
+  ST.running=true; ST.sec=0;
+  startClock(); paintClock();
+  $('#sEnter').classList.add('hide');
+  $('#sFinal').classList.add('hide');
+  $('#sArch').classList.add('hide');
+  $('#sTrain').classList.remove('hide');
+  render();
+  window.scrollTo({top:$('#sTrain').offsetTop-70,behavior:'smooth'});
+}
+
+var STAGES=[
+  {no:'01',name:'用自己的话说',en:'SAY IT PLAIN'},
+  {no:'02',name:'教材之外的例子',en:'REAL EXAMPLE'},
+  {no:'03',name:'三个场景判断',en:'BOUNDARY TEST'},
+  {no:'04',name:'设计陷阱题',en:'TRAP DESIGN'}
+];
+
+var PROMPTS=[
+'你是认知诊断教练，概念={{concept}}。铁律：作答前禁给定义。请用户≤80字讲给门外汉。收到后：①标回显行话；②按【去术语率/机制完整度/可迁移性】各0–3分；③只给3条反馈：第1条「你说：」引原句≤12字，第2条指缺口，第3条须为30秒可做的动作。禁用「你错了」。',
+'概念={{concept}}。禁复述上一版答案。举一个教材外、亲历或可核查的例子，并标出「哪一步体现了{{concept}}」；若是课本原型或泛指，只追问「当时发生在哪」，不给范例。评分【可核查性/属性对齐/教材距离】各0–3分；反馈3条：第1条引原句≤12字，第3条为可行动作。',
+'概念={{concept}}。生成3个候选场景：①明显适用；②条件依赖的边界；③看似适用实则不適用，判断前不作标注。请用户对每个判「适用/不适用/看情况」并写一句依据。按【判断一致性/前提识别/依据说服力】各0–3分，给3条反馈：第1条引其依据原句，第2条提问补前提，第3条为可行动作。',
+'概念={{concept}}。角色反转：请用户设计一道把该概念讲错的题（题干＋≥2选项），指出最像对的错解错在哪与如何补救；不代出题干，只诊断。评分【隐蔽度/错位定位/纠正解释力】各0–3分；反馈3条：第1条引其题中原句≤12字，第2条看是否命中误解，第3条为可行动作。'
+];
+
+/* =========================================================
+   渲染训练台
+   ========================================================= */
+var RENDERERS=[r1,r2,r3,r4];
+function render(){
+  var i=ST.stage-1;
+  $('#trNo').textContent=STAGES[i].no;
+  $('#trName').textContent=STAGES[i].name;
+  // step bar
+  var sb=$('#stagebar'); sb.innerHTML='';
+  STAGES.forEach(function(s,idx){
+    var cls= idx===i?'st on' : (idx<i?'st done':'st');
+    sb.appendChild(el('<div class="'+cls+'"><i>'+(idx<i?'✓':s.no)+'</i><span>'+s.name+'</span></div>'));
+    if(idx<STAGES.length-1) sb.appendChild(el('<div class="ln"></div>'));
+  });
+  var card=$('#taskcard'); card.innerHTML='';
+  card.appendChild(el('<div class="tc-kick">任务 '+STAGES[i].no+' / 04 · '+STAGES[i].en+'</div>'));
+  var body=document.createElement('div');
+  body.innerHTML=RENDERERS[i]();
+  card.appendChild(body);
+  bindStage(i);
+}
+function conceptBadge(){
+  return '<span class="pill on">'+esc(ST.concept)+'</span>';
+}
+
+/* ---------- 01 ---------- */
+function r1(){
+  return '<h4 class="tc-title">用自己的话说一遍 '+esc(ST.concept)+'</h4>'+
+  '<p class="tc-desc">想象对面是一位没修过这门课的朋友。用一句话讲清楚它，<b>不要使用教材里的那个词本身</b>，也不要借用它的同族术语。<br>这一关我们不提供标准说法 —— 你写完之后，反馈只会引用你自己写下的句子。</p>'+
+  '<div class="limitrow"><span id="c1">0 / 80 字</span><span>'+conceptBadge()+'</span></div>'+
+  '<textarea id="t1" rows="4" maxlength="80" placeholder="它在讲一件什么事？比如说……"></textarea>'+
+  '<div class="echobox" id="echo1"><span class="lbl">回显检测</span><span class="none">开始写吧，命中术语会在这里露出</span></div>'+
+  '<div class="hintrow"><button class="sm ghost" id="reask1">换个角度再问一次</button><span class="why">换的是提问视角，不会降低难度，也不会给出答案</span></div>'+
+  '<div class="acts"><button class="primary" id="sub1">提交这一关</button><span class="why">提交后才出现反馈 · 反馈恒为 3 条</span></div>'+
+  promptDrawer(0);
+}
+var ASK1=['想象对面是一位没修过这门课的朋友，一句话讲清楚它。',
+ '如果你要向一个初中生解释，你会先举哪个动作或哪种变化？',
+ '不用这个词，你会怎么称呼它描述的那种情形？',
+ '如果只能画一个箭头，箭头从什么指向什么？'];
+var askIdx=0;
+
+/* ---------- 02 ---------- */
+function r2(){
+  return '<h4 class="tc-title">换一个教材里没有的例子</h4>'+
+  '<p class="tc-desc">请举一个<b>你亲身经历或可以核查</b>的真实例子 —— 不是课本原型，也不是泛指的「比如小明…」。<br>写完请标出：这个例子里，<b>到底是哪一步</b>体现了 '+esc(ST.concept)+'。</p>'+
+  '<div class="fld"><label>例子本身 · 越具体越好，有时间和地点最好</label><textarea id="t2" rows="4" placeholder="上个月/上周，在某地，发生了……"></textarea></div>'+
+  '<div class="fld"><label>来源 · 选一个最接近的</label><div class="opts" id="src2">'+
+    ['生活','实习 / 兼职','新闻 / 公共事件','另一门学科'].map(function(s){
+      return '<div class="opt" data-s="'+s+'">'+s+'</div>';}).join('')+'</div></div>'+
+  '<div class="fld"><label>哪一步体现了它？ <b>这一步是关键评分点</b></label><textarea id="t2b" rows="2" placeholder="当……的时候，因为……，所以它是……"></textarea></div>'+
+  '<div class="acts"><button class="primary" id="sub2">提交这一关</button></div>'+
+  promptDrawer(1);
+}
+
+/* ---------- 03（迭代版） ---------- */
+function r3(){
+  var scenes=ST.pack?ST.pack.scenes:fallbackScenes();
+  ST._scenes=scenes;
+  var html='<h4 class="tc-title">三个场景，逐个判断它是否适用</h4>'+
+  '<p class="tc-desc">下面三个场景摆在一起，其中<b>没有标注任何一个的答案</b>。请你对每个场景判「适用 / 不适用 / 看情况」，并<b>为每个判断写一句依据</b> —— 依据比判断本身更重要。三张卡一起提交。</p>';
+  scenes.forEach(function(s,i){
+    html+='<div class="scene"><div class="sx"><em>SCENE '+(i+1)+'</em>'+esc(s.t)+'</div>'+
+      '<div class="verdicts" data-i="'+i+'">'+
+      ['适用','不适用','看情况'].map(function(v){return '<div class="opt" data-v="'+v+'">'+v+'</div>'}).join('')+
+      '</div><input type="text" class="basis" data-b="'+i+'" placeholder="依据：因为……（≤25 字，写清你依据的那个前提）" maxlength="40"></div>';
+  });
+  html+='<div class="acts"><button class="primary" id="sub3">提交这一关</button><span class="why">提交后才能看到被你漏掉的关键前提</span></div>'+promptDrawer(2);
+  return html;
+}
+function fallbackScenes(){
+  return [
+    {v:'适用',key:'概念的核心条件都成立', t:'一个可以直接用「'+ST.concept+'」来描述的日常场景：条件齐备、没有缺项。'},
+    {v:'不适用',key:'缺了某个必要前提', t:'一个看起来很像、但少了其中一项必要条件的场景，容易误判为适用。'},
+    {v:'看情况',key:'取决于某个外部变量', t:'一个结论会随外部条件翻面的场景，需要先补一句前提才能判断。'}
+  ];
+}
+
+/* ---------- 04 ---------- */
+function r4(){
+  return '<h4 class="tc-title">亲手把这个概念讲错一次</h4>'+
+  '<p class="tc-desc">第四步把角色反过来：你来当出题人。设计一道<b>能把 '+esc(ST.concept)+' 讲错</b>的题 —— 要足够像，让别人真的会选错。<br>然后勾出那个「陷阱选项」，说明<b>它错在哪</b>、<b>怎么补救</b>。</p>'+
+  '<div class="fld"><label>题干</label><textarea id="t4" rows="2" placeholder="下列关于……的说法，最符合的是？"></textarea></div>'+
+  '<div class="fld"><label>选项 · 至少 2 个，并勾选你埋下的那个陷阱项</label><div id="opts4"></div>'+
+  '<button class="sm ghost" id="addOpt">＋ 增加一个选项</button></div>'+
+  '<div class="fld"><label>这个选项错在哪？</label><textarea id="t4b" rows="2" placeholder="它把……当成了……，忽略了……"></textarea></div>'+
+  '<div class="fld"><label>怎么补救这个说法？</label><textarea id="t4c" rows="2" placeholder="更稳的说法是……，因为……"></textarea></div>'+
+  '<div class="acts"><button class="primary" id="sub4">提交这一关</button></div>'+
+  promptDrawer(3);
+}
+function promptDrawer(i){
+  var p=PROMPTS[i].replace(/\{\{concept\}\}/g,ST.concept);
+  return '<details class="drawer"><summary>查看这一关的 AI 提示词原文（可直接上线）</summary>'+
+    '<pre>'+esc(p)+'</pre>'+
+    '<div class="dbtns"><button class="sm" data-copy="'+i+'">复制提示词</button>'+
+    '<span class="why" style="align-self:center">变量 {{concept}} 已替入</span></div></details>';
+}
+
+/* =========================================================
+   绑定
+   ========================================================= */
+function bindStage(i){
+  if(i===0){
+    var t=$('#t1'), box=$('#echo1');
+    var upd=function(){
+      var v=t.value, n=countCN(v);
+      $('#c1').textContent=n+' / 80 字'+(n>=72?' · 快到上限':'');
+      $('#c1').className=n>=72?'hot':'';
+      var list=(ST.pack?ST.pack.terms:[]).concat(GENERAL);
+      list=list.concat([ST.concept]);
+      var h=hitsOf(v,Array.from(new Set(list)));
+      t.classList.toggle('termhit',h.length>0);
+      box.innerHTML='<span class="lbl">回显检测</span>'+
+        (h.length? h.map(function(w){return '<span class="w">'+esc(w)+'</span>'}).join('')
+                 : '<span class="none">当前没有回显行话，这个状态很好</span>');
+      ST.a.echo=h.length;
+    };
+    t.addEventListener('input',upd); upd();
+    $('#reask1').onclick=function(){ askIdx=(askIdx+1)%ASK1.length; toast(ASK1[askIdx]); };
+    $('#sub1').onclick=function(){ submit1(t.value.trim()); };
+  }
+  if(i===1){
+    Array.prototype.forEach.call(document.querySelectorAll('#src2 .opt'),function(o){
+      o.onclick=function(){
+        Array.prototype.forEach.call(o.parentNode.children,function(x){x.classList.remove('on')});
+        o.classList.add('on'); ST.a.src=o.dataset.s;
+      };
+    });
+    $('#sub2').onclick=function(){ submit2($('#t2').value.trim(),$('#t2b').value.trim()); };
+  }
+  if(i===2){
+    Array.prototype.forEach.call(document.querySelectorAll('#stagebar'),function(){});
+    Array.prototype.forEach.call(document.querySelectorAll('.verdicts'),function(g){
+      Array.prototype.forEach.call(g.children,function(o){
+        o.onclick=function(){
+          Array.prototype.forEach.call(o.parentNode.children,function(x){x.classList.remove('on')});
+          o.classList.add('on');
+          ST.a['v'+g.dataset.i]=o.dataset.v;
+        };
+      });
+    });
+    $('#sub3').onclick=function(){
+      var arr=[];
+      for(var k=0;k<3;k++){
+        arr.push({v:ST.a['v'+k]||'',b:($('.basis[data-b="'+k+'"]')||{value:''}).value.trim()});
+      }
+      submit3(arr);
+    };
+  }
+  if(i===3){
+    var box=$('#opts4'); ST._opts=['','',''];
+    var paintOpts=function(){
+      box.innerHTML='';
+      ST._opts.forEach(function(v,idx){
+        var tag=String.fromCharCode(65+idx);
+        var row=el('<div class="optrow"><span class="tag">'+tag+'</span>'+
+          '<input type="text" value="'+esc(v)+'" placeholder="选项 '+tag+'">'+
+          (ST._opts.length>2?'<button class="sm ghost del" data-d="'+idx+'">删除</button>':'')+'</div>');
+        box.appendChild(row);
+        row.querySelector('input').addEventListener('input',function(){ ST._opts[idx]=this.value; });
+        var d=row.querySelector('.del');
+        if(d) d.onclick=function(){ ST._opts.splice(idx,1); ST._trap=Math.min(ST._trap||0,ST._opts.length-1); paintOpts(); };
+      });
+      // 陷阱项选择
+      var wrap=el('<div class="verdicts" id="trapPick" style="margin-top:4px">'+
+        ST._opts.map(function(v,i){ return '<div class="opt" data-i="'+i+'">'+
+          String.fromCharCode(65+i)+' 是陷阱项</div>';}).join('')+'</div>');
+      box.appendChild(wrap);
+      Array.prototype.forEach.call(wrap.children,function(o){
+        o.onclick=function(){
+          Array.prototype.forEach.call(wrap.children,function(x){x.classList.remove('on')});
+          o.classList.add('on'); ST._trap=parseInt(o.dataset.i,10);
+        };
+      });
+      if(ST._trap!=null&&ST._trap<ST._opts.length){
+        wrap.children[ST._trap].classList.add('on');
+      }
+    };
+    ST._trap=0; paintOpts();
+    $('#addOpt').onclick=function(){ if(ST._opts.length>=5){toast('五个选项已经足够，再多反而削弱陷阱');return;} ST._opts.push(''); paintOpts(); };
+    $('#sub4').onclick=function(){
+      submit4($('#t4').value.trim(),ST._opts,$('#t4b').value.trim(),$('#t4c').value.trim());
+    };
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-copy]'),function(b){
+    b.onclick=function(){
+      var p=PROMPTS[parseInt(b.dataset.copy,10)];
+      copy(p.replace(/\{\{concept\}\}/g,ST.concept));
+    };
+  });
+}
+function copy(s){
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(s).then(function(){toast('提示词已复制')},function(){fallbackCopy(s)});
+  }else fallbackCopy(s);
+}
+function fallbackCopy(s){
+  var ta=document.createElement('textarea');ta.value=s;document.body.appendChild(ta);
+  ta.select();try{document.execCommand('copy');toast('提示词已复制')}catch(e){toast('复制失败，请手动选择')}
+  document.body.removeChild(ta);
+}
+
+/* =========================================================
+   评分 + 反馈生成
+   ========================================================= */
+function dimsHTML(dims){
+  return '<div class="dims">'+dims.map(function(d){
+    return '<div class="dim"><div class="dn"><span>'+d[0]+'</span><b>'+d[1]+'</b></div>'+
+      '<div class="db"><i style="width:'+(d[1]/3*100)+'%"></i></div></div>';
+  }).join('')+'</div>';
+}
+function fbCard(title,sub,dims,lines,extra){
+  var h='<div class="fb"><h4>'+title+' <small>'+sub+'</small></h4>'+dimsHTML(dims);
+  lines.forEach(function(t,i){
+    h+='<div class="fbline'+(i===2?' act':'')+'"><span class="ix">'+(i+1)+'</span>'+
+      '<div class="tx">'+t+'</div></div>';
+  });
+  if(extra) h+=extra;
+  return h+'</div>';
+}
+function q(s){return '<q>'+esc(clip(s,12))+'</q>'}
+function nextBtn(n){
+  return '<div class="acts"><button class="primary" id="nextBtn">'+
+    (n<4?'继续：'+STAGES[n].name:'看看这次的跃迁')+'</button>'+
+    '<span class="why">本关卡反馈只有这 3 条，改完再往下走</span></div>';
+}
+
+/* 01 */
+function submit1(raw){
+  if(countCN(raw)<8){ toast('先写一句再提交，哪怕只是半句 —— 反馈需要你的原话才能落地'); return; }
+  var terms=Array.from(new Set([ST.concept].concat(ST.pack?ST.pack.terms:[]).concat(GENERAL)));
+  var h=hitsOf(raw,terms);
+  var mech=ST.pack?hitsOf(raw,ST.pack.mech):[];
+  var tr=ST.pack?hitsOf(raw,ST.pack.transfer):[];
+  var causal=/因为|所以|由于|导致|使得|于是|前提|当.{1,6}时|会|才|若|如果/.test(raw);
+  var n=countCN(raw);
+
+  var s1= h.length===0?3: h.length===1?2: h.length===2?1:0;
+  var s2= clamp3((mech.length>=2?1:mech.length) + (causal?1:0) + (n>=28?1:0));
+  var s3= clamp3((tr.length?1:0) + (h.length===0?1:0) + (n>=24&&n<=72?1:0));
+
+  var L=[];
+  if(h.length){
+    L.push('你说：'+q(pickQuote(raw,h))+' —— 这里 '+esc(h.slice(0,2).join('、'))+' 还在替你把意思说掉一半，读者的理解可能停在词上而不是画面上。');
+  }else{
+    L.push('你说：'+q(pickQuote(raw,mech))+' —— 这一句没有借术语，读者是被动作带着往前走的。');
+  }
+  if(s2<=1){
+    L.push('链条停在结果那里：'+esc(clip(raw.slice(-14),14))+' 之后，缺一句「因为什么」和「在什么前提下」，读者容易把它当成一句口号。');
+  }else if(!tr.length){
+    L.push('机制已经说得通了，只是还没跟读者已经知道的东西搭上桥 —— 一个日常类比就能省掉半段解释。');
+  }else{
+    L.push('因果、前提和类比都在，这句话脱离语境也站得住。');
+  }
+  L.push('<b>动手：</b>'+(h.length? ('把 '+esc(h[0])+' 换成一句生活动词，重写这一句，限时 60 秒。')
+    : (causal? '把这句压缩到 40 字以内再念一遍，听一听有没有绕口。'
+             : '在句首补一个「因为」、句尾补一个「前提」，30 秒内改完。')));
+
+  ST.a.t1=raw; ST.fb.s1={d:[['去术语率',s1],['机制完整度',s2],['可迁移性',s3]],raw:raw,hits:h};
+  var out=fbCard('任务 01 · 反馈','引用你的原话 · 恒 3 条',ST.fb.s1.d,L,
+    '<div class="mirror"><div class="mt">你自己的说法（系统不提供标准答案）</div>'+
+    '<div class="row"><span>MINE</span><div>'+esc(raw)+'</div></div></div>');
+  showFB(out,0,1);
+}
+
+/* 02 */
+function submit2(ex,step){
+  if(countCN(ex)<10){ toast('例子再具体一点 —— 哪怕是一个具体的时间和一个地点'); return; }
+  var beh=hitsOf(ex,BEHAVIOR);
+  var tbk=hitsOf(ex,TEXTBOOKISH.concat(ST.pack?ST.pack.textbook:[]));
+  var mech=ST.pack?hitsOf(step,ST.pack.mech):[];
+  var n=countCN(ex);
+
+  var s1=clamp3((beh.length>=2?2:beh.length?1:0)+(n>=24?1:0)-(tbk.length?2:0));
+  var s2=clamp3((mech.length>=2?2:mech.length?1:0)+(countCN(step)>=10?1:0));
+  var s3=tbk.length? (tbk.length>=2?0:1) : clamp3(2+(beh.length>=2?1:0)-(n<18?1:0));
+
+  var L=[];
+  L.push('你说：'+q(pickQuote(ex,beh))+' —— '+(beh.length>=2?'时间、动作都在，读者能把它当成一件真发生过的事。':'这个例子还停在泛指，读者抓不到具体的那件事。'));
+  if(tbk.length){
+    L.push('它离教材太近了：'+esc(tbk.join('、'))+' 出现在例子里，说明这一轮很可能是在复述你读过的那段，而不是你自己撞上的那件事。');
+  }else if(s2<=1){
+    L.push('你说「'+esc(clip(step||'……',12))+'」标明了作用点，但这一步跟 '+esc(ST.concept)+' 咬合得还不够紧 —— 换掉它，例子依然成立。');
+  }else{
+    L.push('作用点标得很实：'+esc(clip(step,16))+' —— 把这一步抽掉，例子就不再成立，说明它真的落在关键属性上。');
+  }
+  L.push('<b>动手：</b>'+(tbk.length? '把出现 '+esc(tbk[0])+' 的那一句删掉，换成你自己的一段经历，2 分钟内改完。'
+    : (beh.length<2? '在例子开头补一个具体时间（几月、周几、几点）和一个地点，30 秒可完成。'
+                   : '给这个例子换一个完全不相关的场景重讲一遍，验证它是不是只在这个场合成立。')));
+
+  ST.a.t2=ex; ST.a.t2b=step; ST.fb.s2={d:[['可核查性',s1],['属性对齐',s2],['教材距离',s3]]};
+  showFB(fbCard('任务 02 · 反馈','引用你的原话 · 恒 3 条',ST.fb.s2.d,L),0,2);
+}
+
+/* 03 */
+function submit3(arr){
+  var empty=arr.filter(function(x){return !x.v||countCN(x.b)<4}).length;
+  if(empty){ toast('三个判断都要有依据 —— 哪怕只有四个字，也比留空有用'); return; }
+  var sc=ST._scenes; var ok=0, keys=0;
+  arr.forEach(function(x,i){
+    if(x.v===sc[i].v) ok++;
+    else if(sc[i].v==='看情况'&&(x.v==='适用'||x.v==='不适用')) ok+=0.5;
+    var kh=hitsOf(x.b,[sc[i].key.slice(0,4)]);
+    var generic=/前提|取决于|取决于是否|如果|看|关键|取决于|是否|条件|因为|在.{1,8}下/.test(x.b);
+    if(kh.length||generic) keys++;
+  });
+  var persuasive=arr.filter(function(x){return countCN(x.b)>=8&&/因为|所以|由于|前提|取决于|关键|只有|除非|如果/.test(x.b)}).length;
+
+  var s1=clamp3(Math.round(ok));
+  var s2=clamp3(keys);
+  var s3=clamp3(persuasive);
+
+  var best=arr[0]; for(var i=1;i<arr.length;i++){ if(countCN(arr[i].b)>countCN(best.b)) best=arr[i]; }
+  var bi=arr.indexOf(best);
+  var wrong=null; for(var j=0;j<3;j++){ if(arr[j].v!==sc[j].v){ wrong=j; break; } }
+
+  var L=[];
+  L.push('你说：'+q(best.b)+' —— 这句依据里已经碰到了'+esc(sc[bi].key.slice(0,8))+'这条线，它正是区分这几个场景的那根引线。');
+  if(wrong!=null){
+    L.push('场景 '+(wrong+1)+' 你判的是「'+esc(arr[wrong].v)+'」。如果把它换成'+esc(sc[wrong].key)+'完全不成立的版本，你现在的结论会跟着翻面吗？—— 这条缝隙就是它的边界。');
+  }else{
+    L.push('三个方向都判对了；真正拉开差距的是依据里有没有写出那个会把结论翻面的条件 —— 你已经写到了其中 '+s2+' 处。');
+  }
+  L.push('<b>动手：</b>挑一个你最没把握的场景，把依据改写成「只有当……时才成立」的句式，30 秒改写一次。');
+
+  ST.a.v3=arr; ST.fb.s3={d:[['判断一致性',s1],['前提识别',s2],['依据说服力',s3]]};
+  var cmp='<div class="mirror"><div class="mt">你的三个判断（右侧为带走的关键前提，不是标准答案）</div>'+
+    sc.map(function(s,i){
+      return '<div class="row"><span>SCENE '+(i+1)+'</span><div>你判：'+esc(arr[i].v||'—')+' · 依据：'+esc(arr[i].b||'—')+
+        '<br>这句判断依赖的前提：<span style="color:var(--acc)">'+esc(s.key)+'</span></div></div>';
+    }).join('')+'</div>';
+  showFB(fbCard('任务 03 · 反馈','引用你的原话 · 恒 3 条',ST.fb.s3.d,L,cmp),0,3);
+}
+
+/* 04 */
+function submit4(stem,opts,why,fix){
+  if(countCN(stem)<8){ toast('先写下题干，再考虑怎么把它讲错'); return; }
+  var filled=opts.filter(function(o){return countCN(o)>=2});
+  if(filled.length<2){ toast('至少填满两个选项，陷阱才有地方可藏'); return; }
+  if(countCN(why)<6){ toast('补一句「它错在哪」—— 这一步才是第三步要的诊断'); return; }
+  var mis=ST.pack?hitsOf(why,ST.pack.mis.map(function(m){return m.slice(0,4)})):[];
+  var absolute=hitsOf(stem,['一定','所有','总是','必然','唯一','绝对','都']);
+  var patch=countCN(fix);
+  var nOpt=filled.length;
+
+  var s1=clamp3((absolute.length?0:1)+(nOpt>=3?1:0)+(countCN(stem)>=16?1:0));
+  var s2=clamp3((mis.length?2:hitsOf(why,['把','当成','忽略','缺','前提','当成']).length?1:0)+(countCN(why)>=14?1:0));
+  var s3=clamp3((patch>=14?1:0)+(hitsOf(fix,['因为','更稳','实际','其实','应该']).length?1:0)+(patch>=26?1:0));
+
+  var trap=opts[ST._trap]||filled[0];
+  var L=[];
+  L.push('你说：'+q(trap)+' —— 这个错法'+(mis.length? '正好压在典型误解上（'+esc(ST.pack.mis[0])+'这一类），别人会很自然地选它。'
+    : '读起来还很表面，识破它不需要真正理解这个概念。'));
+  if(absolute.length){
+    L.push('题干里出现了「'+esc(absolute[0])+'」—— 这种说法会立刻暴露这是错的一方，陷阱的隐蔽度被自己削掉了。');
+  }else if(s2<=1){
+    L.push('你说「'+esc(clip(why,12))+'」，但还没指出它具体错在哪一个位置：是缺了前提，还是把 A 当成了 B？');
+  }else{
+    L.push('错位靶点很准：'+esc(clip(why,16))+' —— 它瞄准的是理解上的缺口，而不是记忆上的漏洞。');
+  }
+  L.push('<b>动手：</b>'+(absolute.length? ('把题干里的「'+esc(absolute[0])+'」换成一个听起来更温和的说法，让它只有真懂的人才能排掉。')
+    : (s3<=1? '在「怎么补救」里补一句「因为……」，写出那条被跳过的推理，60 秒改完。'
+            : '把这个陷阱给一位同学做一遍，记录他选哪一项、说得出什么理由。')));
+
+  ST.fb.s4={d:[['隐蔽度',s1],['错位定位',s2],['纠正解释力',s3]]};
+  var cmp='<div class="mirror"><div class="mt">你写的题干 vs 你写的补救思路 —— 两处都是你自己的话</div>'+
+    '<div class="row"><span>TRAP</span><div>'+esc(clip(trap,60))+'</div></div>'+
+    '<div class="row"><span>FIX</span><div>'+esc(clip(fix||'（未填写）',60))+'</div></div></div>';
+  showFB(fbCard('任务 04 · 反馈','引用你的原话 · 恒 3 条',ST.fb.s4.d,L,cmp),0,4);
+}
+
+/* =========================================================
+   流转
+   ========================================================= */
+function showFB(html,noPAfter,idx){
+  var c=$('#taskcard');
+  c.appendChild(el(html));
+  c.appendChild(el(nextBtn(idx)));
+  $('#nextBtn').onclick=function(){
+    if(idx<4){ ST.stage=idx+1; resetStageClock(); render(); }
+    else finish();
+    window.scrollTo({top:$('#sTrain').offsetTop-70,behavior:'smooth'});
+  };
+  window.scrollTo({top:c.offsetTop+c.scrollHeight-260,behavior:'smooth'});
+}
+
+function finish(){
+  ST.running=false;
+  $('#sTrain').classList.add('hide');
+  $('#sFinal').classList.remove('hide');
+  renderFinal();
+  window.scrollTo({top:$('#sFinal').offsetTop-70,behavior:'smooth'});
+}
+
+function renderFinal(){
+  var d1=ST.fb.s1.d.map(function(x){return x[1]}),d2=ST.fb.s2.d.map(function(x){return x[1]}),
+      d3=ST.fb.s3.d.map(function(x){return x[1]}),d4=ST.fb.s4.d.map(function(x){return x[1]});
+  var avg=[d1,d2,d3,d4].map(function(d){return Math.round((d[0]+d[1]+d[2])/3*10)/10});
+  var weak=0; for(var i=1;i<4;i++){ if(avg[i]<avg[weak]) weak=i; }
+  var names=['去术语复述','换例子','场景判断','陷阱设计'];
+  var dimNames=['去术语率','机制完整度','可迁移性','可核查性','属性对齐','教材距离','判断一致性','前提识别','依据说服力','隐蔽度','错位定位','纠正解释力'];
+  var flat=d1.concat(d2,d3,d4);
+  var low=0; for(var k=1;k<flat.length;k++){ if(flat[k]<flat[low]) low=k; }
+
+  var misTag=ST.pack?(ST.fb.s4.d[1][1]<=1?'错位靶点偏浅':ST.pack.mis[Math.min(2,3-Math.max(d4[1],d4[2]))]||ST.pack.mis[0]):'边界条件尚未写清';
+  var action=(ST.fb.s1.d[0][1]<=1?'把刚才那个术语换成生活里的动词重写一句':
+              d3[1]<=1?'回到场景②，把依据补成「只有当……时才成立」':
+              d2[2]<=1?'把那个离教材太近的例子换成自己的一段经历':
+              '把这道陷阱题拿给身边的人做一遍，记录他选了什么');
+
+  var hist=load();
+  var prev=hist.filter(function(r){return r.concept===ST.concept});
+  var prevAvg=prev.length? Math.round(prev[prev.length-1].avg.reduce(function(a,b){return a+b},0)/4*10)/10 : null;
+
+  var html='<div class="panel">'+
+    '<div class="diag"><div class="dt">MISCONCEPTION DIAGNOSIS · 误解诊断</div>'+
+    '<div class="dv">这一轮最薄的一环是「'+names[weak]+'」里的<b>'+dimNames[weak*3+[d1,d2,d3,d4][weak].indexOf(Math.min.apply(null,[d1,d2,d3,d4][weak]))]+'</b> —— 你的表述停在结果那一层，少了能把它扳过去的那个条件。</div></div>'+
+    '<div class="finalgrid">'+
+      '<div class="fcard"><div class="ft">四环节 · 本人本次</div><div class="fv">'+
+        names.map(function(n,i){return n+'：<b style="font-family:var(--mono)">'+avg[i]+'</b>/3';}).join('<br>')+
+      '</div></div>'+
+      '<div class="fcard"><div class="ft">12 个维度里的最低项</div><div class="fv">'+dimNames[low]+' <span class="mono">'+flat[low]+'/3</span><br>'+
+        '<span style="color:var(--dim)">它不是短板，只是下一个可以先动的地方。</span></div></div>'+
+      '<div class="fcard"><div class="ft">下一个动作 · 30 秒–2 分钟</div><div class="fv">'+esc(action)+'</div></div>'+
+      '<div class="fcard"><div class="ft">与你的上一次对比（'+esc(ST.concept)+'）</div><div class="fv">'+
+        (prevAvg!=null? ('上一次均值 <span class="mono">'+prevAvg+'</span> → 本次 <span class="mono">'+Math.round(avg.reduce(function(a,b){return a+b},0)/4*10)/10+'</span>，只与你自己的历史比。')
+                      : '这是这个概念的第一条记录，从此刻起有了基线。')+'</div></div>'+
+    '</div>'+
+    '<div class="fcard" style="margin-top:12px"><div class="ft">本次训练用时 · 单次窗口 8 分钟</div>'+
+      '<div class="fv"><span class="mono">'+Math.floor(ST.sec/60)+' 分 '+String(ST.sec%60).padStart(2,'0')+' 秒</span>'+
+      (ST.sec>480?' · 已超出 8 分钟窗口，下一次可以把第 ③ 环节的三个依据先写在纸上再录入。':' · 落在窗口内。')+'</div>'+
+      '<div class="trend">'+names.map(function(n,i){
+        return '<div class="col"><div class="barv" style="height:64px"><i style="height:'+(avg[i]/3*100)+'%"></i></div>'+
+        '<div class="lb">'+String(i+1)+'</div></div>';}).join('')+'</div></div>'+
+    '<div class="acts"><button class="primary" id="btnSave">沉淀到理解跃迁档案</button>'+
+      '<span class="why">重练提醒按 1 / 3 / 7 / 21 天生成 · 不出现排行与名次</span></div>'+
+  '</div>';
+  $('#finalBody').innerHTML=html;
+  $('#btnSave').onclick=function(){
+    var rec={
+      id:Date.now(), date:iso(today()), concept:ST.concept, domain:ST.domain,
+      dims:[['去术语率','机制完整度','可迁移性'],['可核查性','属性对齐','教材距离'],
+            ['判断一致性','前提识别','依据说服力'],['隐蔽度','错位定位','纠正解释力']]
+             .map(function(_,i){return [d1,d2,d3,d4][i]}),
+      dimNames:dimNames, avg:avg, weak:names[weak], mis:misTag, action:action,
+      sec:ST.sec, done:false, next:iso(addDays(today(),1)), nextStep:1, quote:clip(ST.a.t1||'',24)
+    };
+    var a=load(); a.push(rec); save(a);
+    toast('已入档 · 明天会提醒你回来重练');
+    this.disabled=true; this.textContent='已沉淀到档案';
+    setTimeout(function(){ openArch(); },700);
+  };
+}
+
+/* =========================================================
+   档案
+   ========================================================= */
+function openArch(){
+  ST.running=false;
+  $('#sTrain').classList.add('hide'); $('#sFinal').classList.remove('hide');
+  renderArch();
+  window.scrollTo({top:$('#sArch').offsetTop-70,behavior:'smooth'});
+}
+Array.prototype.forEach.call(document.querySelectorAll('[data-nav]'),function(b){
+  b.onclick=function(){
+    if(b.dataset.nav==='arch'){ $('#sEnter').classList.add('hide'); $('#sTrain').classList.add('hide');
+      $('#sFinal').classList.add('hide'); $('#sArch').classList.remove('hide'); renderArch();
+      window.scrollTo({top:$('#sArch').offsetTop-70,behavior:'smooth'}); }
+    else { $('#sArch').classList.add('hide'); $('#sFinal').classList.add('hide');
+      $('#sEnter').classList.remove('hide'); $('#sTrain').classList.toggle('hide',ST.stage===0);
+      window.scrollTo({top:$('#sHero').offsetTop-20,behavior:'smooth'}); }
+  };
+});
+
+function renderArch(){
+  var a=load().slice().sort(function(x,y){return x.id-y.id});
+  var box=$('#archBody');
+  if(!a.length){
+    box.innerHTML='<div class="panel"><div class="empty">档案里还没有记录。<br>完成一次四层训练后，这里会按周留下你的「会讲到哪一层」。</div></div>';
+    return;
+  }
+  // 12 周热力
+  var ws=weekStart(today()); var cells=[];
+  for(var i=11;i>=0;i--){
+    var st=addDays(ws,-7*i), en=addDays(st,6);
+    var cnt=a.filter(function(r){var d=new Date(r.date+'T00:00:00');return d>=st&&d<=en}).length;
+    cells.push({st:st,cnt:cnt,i:11-i});
+  }
+  var maxCnt=Math.max.apply(null,cells.map(function(c){return c.cnt}).concat([1]));
+  // 趋势
+  var recent=a.slice(-8);
+  var due=a.filter(function(r){return r.next<=iso(today())&&!r.done});
+
+  var html='<div class="arcgrid">'+
+    '<div class="panel"><div class="ft" style="font-family:var(--mono);font-size:10.5px;color:var(--dim2);letter-spacing:1px">近 12 周 · 训练密度</div>'+
+      '<div class="weeks">'+cells.map(function(c){
+        var cls=c.cnt? (c.cnt>=maxCnt&&maxCnt>1?'w hot':'w has') : 'w';
+        return '<div class="'+cls+'" title="'+iso(c.st)+' 起 · '+c.cnt+' 次">'+(c.cnt||'')+'</div>';
+      }).join('')+'</div>'+
+      '<div class="wlabel"><span>12 周前</span><span>本周</span></div></div>'+
+    '<div class="panel"><div class="ft" style="font-family:var(--mono);font-size:10.5px;color:var(--dim2);letter-spacing:1px">我的四维度近期走势 · 只与本人历史比</div>'+
+      '<div class="trend" style="height:110px">'+recent.map(function(r,i){
+        var v=Math.round(r.avg.reduce(function(x,y){return x+y},0)/4*10)/10;
+        return '<div class="col"><div class="barv" style="height:74px"><i style="height:'+(v/3*100)+'%"></i></div>'+
+          '<div class="lb">'+esc(r.concept.slice(0,2))+'</div></div>';
+      }).join('')+'</div>'+
+      '<div class="note">横轴为最近 '+recent.length+' 次训练，纵轴为四环节均值。没有他人数据参与这张图。</div></div>'+
+    '</div>';
+
+  html+='<div style="margin-top:14px">'+
+    '<div class="sec-h" style="margin-bottom:10px"><span class="no">06.1</span><h3 style="font-size:15px">记录</h3>'+
+    '<span class="en">'+a.length+' 条 · '+(due.length? due.length+' 条待重练':'无待办')+'</span></div>'+
+    '<div style="margin-bottom:11px"><button class="sm ghost" id="expArch">导出 Markdown</button> '+
+    '<button class="sm ghost" id="clrArch">清空档案</button></div>';
+
+  a.slice().reverse().forEach(function(r){
+    var isDue=r.next<=iso(today())&&!r.done;
+    html+='<div class="rec'+(isDue?' due':'')+'">'+
+      '<div class="rh"><b>'+esc(r.concept)+'</b><span class="dt">'+r.date+'</span>'+
+      '<span class="pill">'+esc(r.domain)+'</span>'+
+      (isDue?'<span class="badge">今日该重练 · 第 '+r.nextStep+' 轮</span>':'')+
+      (r.done?'<span class="badge">已回练</span>':'')+'</div>'+
+      '<div class="rv">'+r.dimNames.map(function(n,i){
+        var val=r.dims[Math.floor(i/3)][i%3];
+        return '<span class="'+(val<=1?'hi':'')+'">'+esc(n)+' '+esc(String(val))+'</span>';
+      }).join('')+'</div>'+
+      '<div class="rl">'+
+        '<div><span>误解标签</span><div>'+esc(r.mis)+'</div></div>'+
+        '<div><span>上次原话</span><div>'+(r.quote?esc(r.quote):'—')+'</div></div>'+
+        '<div><span>下一步</span><div>'+esc(r.action)+'</div></div>'+
+      '</div>'+
+      '<div class="acts">'+
+        (r.done?'':'<button class="sm" data-done="'+r.id+'">标为已回练</button>')+
+        '<span class="why">下一次提醒：'+r.next+'（1/3/7/21 天节奏）</span></div>'+
+    '</div>';
+  });
+  html+='</div>';
+  box.innerHTML=html;
+
+  $('#expArch').onclick=function(){ exportMD(a); };
+  $('#clrArch').onclick=function(){
+    if(!confirm('清空本机保存的全部跃迁记录？此操作不可撤销。')) return;
+    save([]); renderArch(); toast('档案已清空');
+  };
+  Array.prototype.forEach.call(document.querySelectorAll('[data-done]'),function(b){
+    b.onclick=function(){
+      var arr=load();
+      for(var i=0;i<arr.length;i++){
+        if(String(arr[i].id)===b.dataset.done){
+          var steps=[1,3,7,21], cur=arr[i].nextStep||1;
+          arr[i].done=true;
+          arr[i].nextStep=Math.min(4,cur+1);
+          arr[i].next=iso(addDays(today(),steps[Math.min(3,arr[i].nextStep-1)]));
+        }
+      }
+      save(arr); renderArch(); toast('已记录 · 下一次提醒按 3 天后生成');
+    };
+  });
+}
+
+function exportMD(a){
+  var lines=['# 理解跃迁档案','','> 共 '+a.length+' 条记录 · 只含本人数据，无排名与名次',''];
+  a.slice().reverse().forEach(function(r,i){
+    lines.push('## '+String(a.length-i).padStart(2,'0')+' · '+r.concept+'（'+r.date+'）');
+    lines.push('');
+    lines.push('- 所属：'+r.domain);
+    lines.push('- 四环节均值：'+r.avg.join(' / ')+'（去术语复述 / 换例子 / 场景判断 / 陷阱设计）');
+    lines.push('- 本次最薄一环：'+r.weak);
+    lines.push('- 误解标签：'+r.mis);
+    lines.push('- 你当时的原话：'+(r.quote||'—'));
+    lines.push('- 下一步动作：'+r.action);
+    lines.push('- 下次重练：'+r.next+(r.done?' · 已完成一轮回练':''));
+    lines.push('');
+  });
+  var blob=new Blob([lines.join('\n')],{type:'text/markdown;charset=utf-8'});
+  var u=URL.createObjectURL(blob), a2=document.createElement('a');
+  a2.href=u; a2.download='理解跃迁档案_'+iso(today())+'.md';
+  document.body.appendChild(a2); a2.click(); document.body.removeChild(a2);
+  setTimeout(function(){URL.revokeObjectURL(u)},1000);
+  toast('已导出 Markdown');
+}
+</script>
+</body>
+</html>
